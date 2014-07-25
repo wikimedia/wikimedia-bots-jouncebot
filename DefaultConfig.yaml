@@ -1,0 +1,19 @@
+# Default configuration file for JounceBot
+#   Copy this:( I' and place in either the JounceBot root or /etc as jouncebot.yaml
+
+irc:
+  server: chat.freenode.net
+  port: 6667
+  channel: "#wikimedia-operations"
+  nick: jouncebot
+  realname: "https://github.com/mattofak/jouncebot"
+  password: SecretSauce
+
+mwclient:
+  wiki: wikitech.wikimedia.org
+  calPage: Deployments
+
+aclFile: /etc/jouncebot.acl.yaml
+
+logging:
+  useSyslog: no
