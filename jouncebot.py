@@ -132,7 +132,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                     nicks = "%s: " % (", ".join(event.owners))
                 else:
                     nicks = ""
-                self.connection.privmsg(self.channel, "%sPlease deploy %s (%s), the time has come. At your service" % (
+                self.connection.privmsg(self.channel, "%sDear anthropoid, the time has come. Please deploy %s (%s)." % (
                     nicks,
                     event.window,
                     event.url
