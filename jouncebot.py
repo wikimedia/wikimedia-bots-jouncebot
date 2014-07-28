@@ -172,7 +172,8 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     # Attempt to load the configuration
-    configloader.import_file(os.path.dirname(__file__) + '/DefaultConfig.yaml')
+    config_path = os.path.join(os.path.dirname(__file__), 'DefaultConfig.yaml')
+    configloader.import_file(config_path)
     if options.configFile is not None:
         configloader.import_file(options.configFile)
 
