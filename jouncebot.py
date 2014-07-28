@@ -91,7 +91,10 @@ class JounceBot(irc.bot.SingleServerIRCBot):
 
     def do_command_help(self, conn, event, cmd, source, nickmask):
         """Prints the list of all commands known to the server"""
-        self.multiline_notice(conn, source, """
+        self.multiline_notice(
+            conn,
+            source,
+            """
             \x02**** JounceBot Help ****\x02
             JounceBot is a deployment helper bot for the Wikimedia Foundation.
             You can find my source at https://github.com/mattofak/jouncebot
