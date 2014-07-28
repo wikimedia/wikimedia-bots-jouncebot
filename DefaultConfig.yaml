@@ -17,3 +17,7 @@ aclFile: /etc/jouncebot.acl.yaml
 
 logging:
   useSyslog: no
+
+messages:
+  - %sDear anthropoid, the time has come. Please deploy %s (%s).
+  - %sRespected human, time to deploy %s (%s). Please do the needful.

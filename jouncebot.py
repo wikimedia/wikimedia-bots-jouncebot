@@ -22,6 +22,7 @@ import re
 import sys
 from datetime import datetime
 import pytz
+import random
 
 
 class JounceBot(irc.bot.SingleServerIRCBot):
@@ -135,7 +136,8 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                     nicks = "%s: " % (", ".join(event.owners))
                 else:
                     nicks = ""
-                self.connection.privmsg(self.channel, "%sDear anthropoid, the time has come. Please deploy %s (%s)." % (
+                message = random.choice(self.config['messages'])
+                self.connection.privmsg(self.channel, message % (
                     nicks,
                     event.window,
                     event.url
