@@ -5,6 +5,7 @@ from datetime import datetime
 import math
 import pytz
 
+
 class DeployPage:
     #: mwclient.Site mwcon: Connection to MediaWiki server that hosts the deployment calendar
     mwcon = None
@@ -20,7 +21,7 @@ class DeployPage:
 
     page_url = ''
 
-    def __init__(self, mwcon, page, logger, update_interval = 15):
+    def __init__(self, mwcon, page, logger, update_interval=15):
         """ Create a DeployPage object
         :param mwclient.Site mwcon: Connection to MediaWiki server that hosts :param page
         :param string page: Title of page that hosts the deployment calendar
@@ -34,7 +35,7 @@ class DeployPage:
         # Things I hate about the MW API right here...
         # This is getting the full URL of the deployments page so we can create
         # nice links in IRC messages
-        page_url_result = mwcon.api('query', **{'titles':'Deployments', 'prop':'info','inprop':'url'})
+        page_url_result = mwcon.api('query', **{'titles': 'Deployments', 'prop': 'info', 'inprop': 'url'})
         self.page_url = page_url_result['query']['pages'][page_url_result['query']['pages'].keys()[0]]['fullurl']
 
     def start(self, notify_callback):
@@ -48,15 +49,16 @@ class DeployPage:
         if self.update_timer:
             self.update_timer.cancel()
 
-    def reparse(self, set_timer = False):
+    def reparse(self, set_timer=False):
         deploy_items = {}
 
         def stringify_children(node):
-            from lxml.etree import tostring
             from itertools import chain
-            parts = ([node.text] +
-                    list(chain(*(stringify_children(c) for c in node.getchildren()))) +
-                    [node.tail])
+            parts = (
+                [node.text] +
+                list(chain(*(stringify_children(c) for c in node.getchildren()))) +
+                [node.tail]
+            )
             # filter removes possible Nones in texts and tails
             return ''.join(filter(None, parts))
 
@@ -90,7 +92,6 @@ class DeployPage:
 
         return deploy_items
 
-
     def get_events(self):
         return self.deploy_items
 
@@ -119,7 +120,7 @@ class DeployPage:
             return ""
 
     def _reparse_on_timer(self):
-        self.reparse(set_timer = True)
+        self.reparse(set_timer=True)
         if self.update_timer:
             self.update_timer.cancel()
 
@@ -133,7 +134,7 @@ class DeployPage:
             if self.notify_timer:
                 self.notify_timer.cancel()
 
-            self.logger.debug( "Setting deploy timer to %s for %s" % (td, next_events[0]))
+            self.logger.debug("Setting deploy timer to %s for %s" % (td, next_events[0]))
             self.notify_timer = Timer(td, self._on_deploy_timer, [next_events])
             self.notify_timer.start()
 

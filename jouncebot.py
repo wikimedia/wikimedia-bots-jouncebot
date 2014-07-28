@@ -20,9 +20,9 @@ from optparse import OptionParser
 import os
 import re
 import sys
-import traceback
 from datetime import datetime
 import pytz
+
 
 class JounceBot(irc.bot.SingleServerIRCBot):
     #: logging.Logger ... for logging things to syslog
@@ -132,7 +132,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                     nicks = "%s: " % (", ".join(event.owners))
                 else:
                     nicks = ""
-                self.connection.privmsg(self.channel, "%sSir, Please deploy %s (%s), the time has come. At your service" % (
+                self.connection.privmsg(self.channel, "%sPlease deploy %s (%s), the time has come. At your service" % (
                     nicks,
                     event.window,
                     event.url
