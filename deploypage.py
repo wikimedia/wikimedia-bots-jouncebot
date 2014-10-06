@@ -66,15 +66,15 @@ class DeployPage:
         tree = etree.fromstring(self._get_page_html(), etree.HTMLParser())
         for item in tree.xpath('//tr[@class="deploycal-item"]'):
             id = item.get('id')
-            times = item.xpath('td/span[@class="deploycal-time-utc"]/time')
+            times = item.xpath('td//span[@class="deploycal-time-utc"]/time')
             start_time = dateutil.parser.parse(times[0].get('datetime'))
             end_time = dateutil.parser.parse(times[1].get('datetime'))
-            window = stringify_children(item.xpath('td/span[@class="deploycal-window"]')[0]) \
+            window = stringify_children(item.xpath('td//span[@class="deploycal-window"]')[0]) \
                 .replace("\n", " ") \
                 .strip()
             owners = map(
                 lambda x: x.text,
-                item.xpath('td/span[@class="ircnick-container"]/span[@class="ircnick"]')
+                item.xpath('td//span[@class="ircnick-container"]/span[@class="ircnick"]')
             )
 
             item_obj = DeployItem(id, '%s#%s' % (self.page_url, id), start_time, end_time, window, owners)
