@@ -1,0 +1,6 @@
+irc
+lxml
+mwclient
+python-dateutil
+pytz
+pyyaml
