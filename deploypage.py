@@ -7,25 +7,18 @@ import pytz
 
 
 class DeployPage:
-    #: mwclient.Site mwcon: Connection to MediaWiki server that hosts the deployment calendar
-    mwcon = None
-    page = ""
-    logger = None
-    update_interval = 1
-
-    notify_callback = None
-    notify_timer = None
-    update_timer = None
-
-    deploy_items = {}
-
-    page_url = ''
+    XPATH_ITEM = '//tr[@class="deploycal-item"]'
+    XPATH_TIMES = 'td//span[@class="deploycal-time-utc"]/time'
+    XPATH_WINDOW = 'td//span[@class="deploycal-window"]'
+    XPATH_NICK = 'td//span[@class="ircnick-container"]/span[@class="ircnick"]'
 
     def __init__(self, mwcon, page, logger, update_interval=15):
         """ Create a DeployPage object
-        :param mwclient.Site mwcon: Connection to MediaWiki server that hosts :param page
+        :param mwclient.Site mwcon: Connection to MediaWiki server that
+            hosts :param page
         :param string page: Title of page that hosts the deployment calendar
-        :param int update_interval: Number of minutes between requests for the deployment page
+        :param int update_interval: Number of minutes between requests for
+            the deployment page
         """
         self.mwcon = mwcon
         self.page = page
@@ -35,8 +28,15 @@ class DeployPage:
         # Things I hate about the MW API right here...
         # This is getting the full URL of the deployments page so we can create
         # nice links in IRC messages
-        page_url_result = mwcon.api('query', **{'titles': 'Deployments', 'prop': 'info', 'inprop': 'url'})
-        self.page_url = page_url_result['query']['pages'][page_url_result['query']['pages'].keys()[0]]['fullurl']
+        page_url_result = mwcon.api('query',
+            **{'titles': 'Deployments', 'prop': 'info', 'inprop': 'url'})
+        idx = page_url_result['query']['pages'].keys()[0]
+        self.page_url = page_url_result['query']['pages'][idx]['fullurl']
+
+        self.notify_callback = None
+        self.notify_timer = None
+        self.update_timer = None
+        self.deploy_items = {}
 
     def start(self, notify_callback):
         """Start all the various timers"""
@@ -56,28 +56,27 @@ class DeployPage:
             from itertools import chain
             parts = (
                 [node.text] +
-                list(chain(*(stringify_children(c) for c in node.getchildren()))) +
+                list(chain(
+                    *(stringify_children(c) for c in node.getchildren()))) +
                 [node.tail]
             )
             # filter removes possible Nones in texts and tails
             return ''.join(filter(None, parts))
 
-        self.logger.debug("Collecting new deployment information from the server")
+        self.logger.debug(
+            "Collecting new deployment information from the server")
         tree = etree.fromstring(self._get_page_html(), etree.HTMLParser())
-        for item in tree.xpath('//tr[@class="deploycal-item"]'):
+        for item in tree.xpath(self.XPATH_ITEM):
             id = item.get('id')
-            times = item.xpath('td//span[@class="deploycal-time-utc"]/time')
+            times = item.xpath(self.XPATH_TIMES)
             start_time = dateutil.parser.parse(times[0].get('datetime'))
             end_time = dateutil.parser.parse(times[1].get('datetime'))
-            window = stringify_children(item.xpath('td//span[@class="deploycal-window"]')[0]) \
-                .replace("\n", " ") \
-                .strip()
-            owners = map(
-                lambda x: x.text,
-                item.xpath('td//span[@class="ircnick-container"]/span[@class="ircnick"]')
-            )
+            window = stringify_children(
+                item.xpath(self.XPATH_WINDOW)[0]).replace("\n", " ").strip()
+            owners = map(lambda x: x.text, item.xpath(self.XPATH_NICK))
 
-            item_obj = DeployItem(id, '%s#%s' % (self.page_url, id), start_time, end_time, window, owners)
+            item_obj = DeployItem(id, '%s#%s' % (self.page_url, id),
+                start_time, end_time, window, owners)
 
             if start_time in deploy_items:
                 deploy_items[start_time].append(item_obj)
@@ -114,9 +113,11 @@ class DeployPage:
 
     def _get_page_html(self):
         try:
-            return self.mwcon.parse(self.mwcon.pages[self.page].edit())['text']['*']
+            return self.mwcon.parse(
+                self.mwcon.pages[self.page].edit())['text']['*']
         except Exception as ex:
-            self.logger.error("Could not fetch page due to exception: " + repr(ex))
+            self.logger.error(
+                "Could not fetch page due to exception: " + repr(ex))
             return ""
 
     def _reparse_on_timer(self):
@@ -124,17 +125,20 @@ class DeployPage:
         if self.update_timer:
             self.update_timer.cancel()
 
-        self.update_timer = Timer(self.update_interval * 60, self._reparse_on_timer)
+        self.update_timer = Timer(
+            self.update_interval * 60, self._reparse_on_timer)
         self.update_timer.start()
 
     def _set_deploy_timer(self):
         next_events = self.get_next_events()
         if len(next_events) > 0:
-            td = math.floor((next_events[0].start - datetime.now(pytz.utc)).total_seconds()) + 5
+            now = datetime.now(pytz.utc)
+            td = 5 + math.floor((next_events[0].start - now).total_seconds())
             if self.notify_timer:
                 self.notify_timer.cancel()
 
-            self.logger.debug("Setting deploy timer to %s for %s" % (td, next_events[0]))
+            self.logger.debug(
+                "Setting deploy timer to %s for %s" % (td, next_events[0]))
             self.notify_timer = Timer(td, self._on_deploy_timer, [next_events])
             self.notify_timer.start()
 

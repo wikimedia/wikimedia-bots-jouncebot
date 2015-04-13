@@ -4,7 +4,8 @@
 
 The known commands are:
     stats -- Prints some channel information.
-    restart -- Disconnect the bot.  The bot will try to reconnect after 60 seconds.
+    restart -- Disconnect the bot.
+               The bot will try to reconnect after 60 seconds.
 """
 
 import configloader
@@ -26,12 +27,6 @@ import random
 
 
 class JounceBot(irc.bot.SingleServerIRCBot):
-    #: logging.Logger ... for logging things to syslog
-    logger = None
-    config = None
-
-    #: DeployPage
-    deploy_page = None
 
     def __init__(self, config, logger, deploy_page):
         self.config = config
@@ -46,18 +41,23 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         self.deploy_page = deploy_page
 
         # Don't even get me started on how stupid a pattern this is
-        irc.client.ServerConnection.buffer_class = irc.buffer.LenientDecodingLineBuffer
+        irc.client.ServerConnection.buffer_class = \
+            irc.buffer.LenientDecodingLineBuffer
 
     def on_nicknameinuse(self, conn, event):
-        self.logger.warning("Requested nickname %s already in use, appending _" % conn.get_nickname())
+        self.logger.warning(
+            "Requested nickname %s already in use, appending _" %
+            conn.get_nickname())
         conn.nick(conn.get_nickname() + "_")
 
     def on_welcome(self, conn, event):
         self.logger.info("Connected to server")
         self.logger.info("Authenticating with Nickserv")
-        conn.privmsg('NickServ', "identify %s %s" % (self.config['irc']['nick'], self.config['irc']['password']))
+        conn.privmsg('NickServ', "identify %s %s" % (
+            self.config['irc']['nick'], self.config['irc']['password']))
 
-        self.logger.info("Getting information about the wiki and starting event handler")
+        self.logger.info(
+            "Getting information about the wiki and starting event handler")
         self.deploy_page.start(self.on_deployment_event)
 
         self.logger.info("Attempting to join channel %s", self.channel)
@@ -72,9 +72,12 @@ class JounceBot(irc.bot.SingleServerIRCBot):
     def on_pubmsg(self, conn, event):
         msg_parts = event.arguments[0].split(" ", 1)
         if len(msg_parts) > 1:
-            handle = re.match("^([a-z0-9_\-\|]+)", irc.strings.lower(msg_parts[0]))
-            if handle and handle.group(0) == irc.strings.lower(self.connection.get_nickname()):
-                self.do_command(conn, event, event.target, msg_parts[1].strip())
+            handle = re.match(r"^([a-z0-9_\-\|]+)",
+                irc.strings.lower(msg_parts[0]))
+            nick = irc.strings.lower(self.connection.get_nickname())
+            if handle and handle.group(0) == nick:
+                self.do_command(
+                    conn, event, event.target, msg_parts[1].strip())
         return
 
     def do_command(self, conn, event, source, cmd):
@@ -84,11 +87,13 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         :param string cmd: String given to the bot via IRC (without bot name)
         """
         nickmask = event.source.userhost
-        self.logger.debug("Received command from %s at %s!%s: %s" % (source, event.source.nick, nickmask, cmd))
+        self.logger.debug("Received command from %s at %s!%s: %s" % (
+            source, event.source.nick, nickmask, cmd))
 
         cmd = cmd.split(" ", 1)
         if cmd[0].lower() in self.brain:
-            self.brain[cmd[0].lower()](self, conn, event, cmd, source, nickmask)
+            self.brain[cmd[0].lower()](
+                self, conn, event, cmd, source, nickmask)
 
     def do_command_help(self, conn, event, cmd, source, nickmask):
         """Prints the list of all commands known to the server"""
@@ -102,7 +107,8 @@ class JounceBot(irc.bot.SingleServerIRCBot):
             \x02Available commands:\x02"""
         )
         for cmd in sorted(self.brain):
-            self.multiline_notice(conn, source, " %-7s %s" % (cmd.upper(), self.brain[cmd].__doc__))
+            self.multiline_notice(conn, source, " %-7s %s" % (
+                cmd.upper(), self.brain[cmd].__doc__))
 
     def do_command_die(self, conn, event, cmd, nick, nickmask):
         """Kill this bot"""
@@ -122,12 +128,12 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         if len(next_events) > 0:
             for event in next_events:
                 td = event.start - ctime
-                conn.privmsg(source, "In %d hour(s) and %d minute(s): %s (%s)" % (
-                    td.days * 24 + td.seconds / 60 / 60,
-                    td.seconds % (60 * 60) / 60,
-                    event.window,
-                    event.url
-                ))
+                conn.privmsg(source,
+                    "In %d hour(s) and %d minute(s): %s (%s)" % (
+                        td.days * 24 + td.seconds / 60 / 60,
+                        td.seconds % (60 * 60) / 60,
+                        event.window,
+                        event.url))
 
     def on_deployment_event(self, next_events):
         if len(next_events) > 0:
@@ -168,7 +174,8 @@ class JounceBot(irc.bot.SingleServerIRCBot):
 
 if __name__ == "__main__":
     parser = OptionParser(usage="usage: %prog [options]")
-    parser.add_option("-c", "--config", dest='configFile', default='jouncebot.yaml', help='Path to configuration file')
+    parser.add_option("-c", "--config", dest='configFile',
+        default='jouncebot.yaml', help='Path to configuration file')
     (options, args) = parser.parse_args()
 
     # Attempt to load the configuration
@@ -184,14 +191,16 @@ if __name__ == "__main__":
         # Just need to log to the console
         handler = logging.StreamHandler(sys.stdout)
         logger.addHandler(handler)
-        handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        handler.setFormatter(
+            logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     else:
         # Log to syslog
         logger.addHandler(logging.handlers.SysLogHandler(address="/dev/log"))
 
     # Mwclient connection
     mw = mwclient.Site(host=('https', configloader.values['mwclient']['wiki']))
-    deploy_page = DeployPage(mw, configloader.values['mwclient']['calPage'], logger)
+    deploy_page = DeployPage(
+        mw, configloader.values['mwclient']['calPage'], logger)
 
     # Create the application
     bot = JounceBot(configloader.values, logger, deploy_page)
