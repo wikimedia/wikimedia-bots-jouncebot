@@ -139,7 +139,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         if len(next_events) > 0:
             for event in next_events:
                 if len(event.owners) > 0:
-                    nicks = "%s: " % (", ".join(event.owners))
+                    nicks = "%s: " % (" ".join(event.owners))
                 else:
                     nicks = ""
                 message = random.choice(self.config['messages'])
