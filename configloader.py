@@ -1,10 +1,23 @@
+# -*- coding: utf-8 -*-
 import yaml
 
 values = {}
 
 
+def construct_yaml_str(self, node):
+    """Create unicode objects for YAML string nodes."""
+    # From http://stackoverflow.com/a/2967461/8171
+    return self.construct_scalar(node)
+
+
+# Attach custom unicode factory to string events
+yaml.Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+
+
 def import_file(filename):
-    """Update the values object with the contents from a YAML configuration file
+    """Update the values object with the contents from a YAML configuration
+    file.
 
     :param string filename: Name of the file to import
 
