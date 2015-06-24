@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import collections
 import datetime
 import dateutil.parser
 import lxml.etree
@@ -51,7 +52,7 @@ class DeployPage:
             self.update_timer.cancel()
 
     def reparse(self, set_timer=False):
-        deploy_items = {}
+        deploy_items = collections.defaultdict(list)
 
         def stringify_children(node):
             from itertools import chain
@@ -80,10 +81,7 @@ class DeployPage:
             item_obj = DeployItem(id, '%s#%s' % (self.page_url, id),
                 start_time, end_time, window, owners)
 
-            if start_time in deploy_items:
-                deploy_items[start_time].append(item_obj)
-            else:
-                deploy_items[start_time] = [item_obj]
+            deploy_items[start_time].append(item_obj)
 
         self.logger.debug("Got %s items" % len(deploy_items))
         self.deploy_items = deploy_items
