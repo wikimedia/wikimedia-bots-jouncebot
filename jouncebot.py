@@ -202,7 +202,10 @@ if __name__ == "__main__":
 
     try:
         bot.start()
-    except Exception as ex:
+    except KeyboardInterrupt:
+        deploy_page.stop()
+        exit(0)
+    except Exception:
         logging.exception("Unhandled exception. Terminating.")
         deploy_page.stop()
         exit(1)
