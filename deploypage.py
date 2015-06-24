@@ -1,9 +1,10 @@
-from lxml import etree
+# -*- coding: utf-8 -*-
+import datetime
 import dateutil.parser
-from threading import Timer
-from datetime import datetime
+import lxml.etree
 import math
 import pytz
+import threading
 
 
 class DeployPage:
@@ -13,7 +14,7 @@ class DeployPage:
     XPATH_NICK = 'td//span[@class="ircnick-container"]/span[@class="ircnick"]'
 
     def __init__(self, mwcon, page, logger, update_interval=15):
-        """ Create a DeployPage object
+        """Create a DeployPage object
         :param mwclient.Site mwcon: Connection to MediaWiki server that
             hosts :param page
         :param string page: Title of page that hosts the deployment calendar
@@ -65,7 +66,8 @@ class DeployPage:
 
         self.logger.debug(
             "Collecting new deployment information from the server")
-        tree = etree.fromstring(self._get_page_html(), etree.HTMLParser())
+        tree = lxml.etree.fromstring(
+            self._get_page_html(), lxml.etree.HTMLParser())
         for item in tree.xpath(self.XPATH_ITEM):
             id = item.get('id')
             times = item.xpath(self.XPATH_TIMES)
@@ -99,7 +101,7 @@ class DeployPage:
 
     def get_next_events(self):
         """What are the first set of DeployEvents in the future"""
-        ctime = datetime.now(pytz.utc)
+        ctime = datetime.datetime.now(pytz.utc)
         nexttime = None
         for time in sorted(self.deploy_items.keys()):
             if ctime < time:
@@ -125,21 +127,22 @@ class DeployPage:
         if self.update_timer:
             self.update_timer.cancel()
 
-        self.update_timer = Timer(
+        self.update_timer = threading.Timer(
             self.update_interval * 60, self._reparse_on_timer)
         self.update_timer.start()
 
     def _set_deploy_timer(self):
         next_events = self.get_next_events()
         if len(next_events) > 0:
-            now = datetime.now(pytz.utc)
+            now = datetime.datetime.now(pytz.utc)
             td = 5 + math.floor((next_events[0].start - now).total_seconds())
             if self.notify_timer:
                 self.notify_timer.cancel()
 
             self.logger.debug(
                 "Setting deploy timer to %s for %s" % (td, next_events[0]))
-            self.notify_timer = Timer(td, self._on_deploy_timer, [next_events])
+            self.notify_timer = threading.Timer(
+                td, self._on_deploy_timer, [next_events])
             self.notify_timer.start()
 
     def _on_deploy_timer(self, events):

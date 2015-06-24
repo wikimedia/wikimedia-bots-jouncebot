@@ -1,15 +1,10 @@
 #! /usr/bin/env python2
-
-"""IRC bot to poke people when their deploy windows are up
-
-The known commands are:
-    stats -- Prints some channel information.
-    restart -- Disconnect the bot.
-               The bot will try to reconnect after 60 seconds.
-"""
+# -*- coding: utf-8 -*-
+"""IRC bot to poke people when their deploy windows are up"""
 
 import configloader
-from deploypage import DeployPage
+import datetime
+import deploypage
 import irc.bot
 import irc.buffer
 import irc.client
@@ -17,13 +12,12 @@ import irc.strings
 import logging
 import logging.handlers
 import mwclient
-from optparse import OptionParser
+import optparse
 import os
-import re
-import sys
-from datetime import datetime
 import pytz
 import random
+import re
+import sys
 
 
 class JounceBot(irc.bot.SingleServerIRCBot):
@@ -123,7 +117,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
 
     def do_command_next(self, conn, event, cmd, source, nickmask):
         """Get the next deployment event(s if they happen at the same time)"""
-        ctime = datetime.now(pytz.utc)
+        ctime = datetime.datetime.now(pytz.utc)
         next_events = self.deploy_page.get_next_events()
         if len(next_events) > 0:
             for event in next_events:
@@ -173,7 +167,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
     }
 
 if __name__ == "__main__":
-    parser = OptionParser(usage="usage: %prog [options]")
+    parser = optparse.OptionParser(usage="usage: %prog [options]")
     parser.add_option("-c", "--config", dest='configFile',
         default='jouncebot.yaml', help='Path to configuration file')
     (options, args) = parser.parse_args()
@@ -199,7 +193,7 @@ if __name__ == "__main__":
 
     # Mwclient connection
     mw = mwclient.Site(host=('https', configloader.values['mwclient']['wiki']))
-    deploy_page = DeployPage(
+    deploy_page = deploypage.DeployPage(
         mw, configloader.values['mwclient']['calPage'], logger)
 
     # Create the application
