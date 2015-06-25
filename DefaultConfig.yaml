@@ -19,7 +19,12 @@ logging:
   useSyslog: no
 
 messages:
-  - '%sDear anthropoid, the time has come. Please deploy %s (%s).'
-  - '%sRespected human, time to deploy %s (%s). Please do the needful.'
+  generic:
+    - 'Deploy window {event.window} ({event.url})'
+  deployer:
+    - '{deployers}: Dear anthropoid, the time has come. Please deploy {event.window} ({event.url}).'
+    - '{deployers}: Respected human, time to deploy {event.window} ({event.url}). Please do the needful.'
+  owner:
+    - '{owners}: A patch you scheduled for {event.window} is about to be deployed. Please be available during the process.'
 
 debug: false

@@ -129,16 +129,14 @@ class JounceBot(irc.bot.SingleServerIRCBot):
     def do_command_next(self, conn, event, cmd, source, nickmask):
         """Get the next deployment event(s if they happen at the same time)"""
         ctime = datetime.datetime.now(pytz.utc)
-        next_events = self.deploy_page.get_next_events()
-        if len(next_events) > 0:
-            for event in next_events:
-                td = event.start - ctime
-                conn.privmsg(source,
-                    "In %d hour(s) and %d minute(s): %s (%s)" % (
-                        td.days * 24 + td.seconds / 60 / 60,
-                        td.seconds % (60 * 60) / 60,
-                        event.window,
-                        event.url))
+        for event in self.deploy_page.get_next_events():
+            td = event.start - ctime
+            conn.privmsg(source,
+                "In %d hour(s) and %d minute(s): %s (%s)" % (
+                    td.days * 24 + td.seconds / 60 / 60,
+                    td.seconds % (60 * 60) / 60,
+                    event.window,
+                    event.url))
 
     def do_command_debug(self, conn, event, cmd, source, nickmask):
         """Debugging commands"""
@@ -149,18 +147,22 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                 time.sleep(2)
 
     def on_deployment_event(self, next_events):
-        if len(next_events) > 0:
-            for event in next_events:
-                if len(event.owners) > 0:
-                    nicks = "%s: " % (" ".join(event.owners))
-                else:
-                    nicks = ""
-                message = random.choice(self.config['messages'])
-                self.connection.privmsg(self.channel, message % (
-                    nicks,
-                    event.window,
-                    event.url
-                ))
+        for event in next_events:
+            if len(event.deployers) > 0:
+                deployers = (u" ".join(event.deployers))
+                msg = random.choice(self.config['messages']['deployer'])
+            else:
+                deployers = False
+                msg = random.choice(self.config['messages']['generic'])
+
+            self.connection.privmsg(
+                self.channel, msg.format(deployers=deployers, event=event))
+
+            if len(event.owners) > 0:
+                owners = (u" ".join(event.owners))
+                msg = random.choice(self.config['messages']['owner'])
+                self.connection.privmsg(
+                    self.channel, msg.format(owners=owners, event=event))
 
     def multiline_notice(self, conn, nick, text):
         lines = text.expandtabs().splitlines()

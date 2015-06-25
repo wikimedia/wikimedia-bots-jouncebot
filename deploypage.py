@@ -12,7 +12,8 @@ class DeployPage:
     XPATH_ITEM = '//tr[@class="deploycal-item"]'
     XPATH_TIMES = 'td//span[@class="deploycal-time-utc"]/time'
     XPATH_WINDOW = 'td//span[@class="deploycal-window"]'
-    XPATH_NICK = 'td//span[@class="ircnick-container"]/span[@class="ircnick"]'
+    XPATH_DEPLOYERS = 'td[3]//span[@class="ircnick"]'
+    XPATH_OWNERS = 'td[4]//span[@class="ircnick"]'
 
     def __init__(self, mwcon, page, logger, update_interval=15):
         """Create a DeployPage object
@@ -76,10 +77,11 @@ class DeployPage:
             end_time = dateutil.parser.parse(times[1].get('datetime'))
             window = stringify_children(
                 item.xpath(self.XPATH_WINDOW)[0]).replace("\n", " ").strip()
-            owners = map(lambda x: x.text, item.xpath(self.XPATH_NICK))
+            deployers = map(lambda x: x.text, item.xpath(self.XPATH_DEPLOYERS))
+            owners = map(lambda x: x.text, item.xpath(self.XPATH_OWNERS))
 
             item_obj = DeployItem(id, '%s#%s' % (self.page_url, id),
-                start_time, end_time, window, owners)
+                start_time, end_time, window, deployers, owners)
 
             deploy_items[start_time].append(item_obj)
 
@@ -151,19 +153,21 @@ class DeployPage:
 
 
 class DeployItem:
-    def __init__(self, id, url, start, end, window, owners):
+    def __init__(self, id, url, start, end, window, deployers, owners):
         self.id = id
         self.url = url
         self.start = start
         self.end = end
         self.window = window
+        self.deployers = deployers
         self.owners = owners
 
     def __repr__(self):
-        return "%s: (%s -> %s) %s; %s" % (
+        return "%s: (%s -> %s) %s; %s for %s" % (
             self.id,
             self.start,
             self.end,
             self.window,
+            ", ".join(self.deployers),
             ", ".join(self.owners)
         )
