@@ -18,25 +18,36 @@ import pytz
 import random
 import re
 import sys
+import time
 
 
 class JounceBot(irc.bot.SingleServerIRCBot):
 
     def __init__(self, config, logger, deploy_page):
         self.config = config
-        irc.bot.SingleServerIRCBot.__init__(
-            self,
-            [(config['irc']['server'], config['irc']['port'])],
-            config['irc']['nick'],
-            config['irc']['realname']
-        )
         self.channel = config['irc']['channel']
         self.logger = logger
         self.deploy_page = deploy_page
 
+        self.brain = {
+            'help': self.do_command_help,
+            'die': self.do_command_die,
+            'next': self.do_command_next,
+            'refresh': self.do_command_refresh,
+        }
+        if self.config['debug']:
+            self.brain['debug'] = self.do_command_debug
+
         # Don't even get me started on how stupid a pattern this is
         irc.client.ServerConnection.buffer_class = \
             irc.buffer.LenientDecodingLineBuffer
+
+        irc.bot.SingleServerIRCBot.__init__(
+            self,
+            [(self.config['irc']['server'], self.config['irc']['port'])],
+            self.config['irc']['nick'],
+            self.config['irc']['realname']
+        )
 
     def on_nicknameinuse(self, conn, event):
         self.logger.warning(
@@ -75,7 +86,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         return
 
     def do_command(self, conn, event, source, cmd):
-        """ Attempt to perform a given command given to the bot via IRC
+        """Attempt to perform a given command given to the bot via IRC
         :param irc.client.ServerConnection conn
         :param irc.client.Event event
         :param string cmd: String given to the bot via IRC (without bot name)
@@ -87,7 +98,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         cmd = cmd.split(" ", 1)
         if cmd[0].lower() in self.brain:
             self.brain[cmd[0].lower()](
-                self, conn, event, cmd, source, nickmask)
+                conn, event, cmd, source, nickmask)
 
     def do_command_help(self, conn, event, cmd, source, nickmask):
         """Prints the list of all commands known to the server"""
@@ -129,6 +140,14 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                         event.window,
                         event.url))
 
+    def do_command_debug(self, conn, event, cmd, source, nickmask):
+        """Debugging commands"""
+        if len(cmd) > 1 and cmd[1] == 'play events':
+            events = self.deploy_page.get_events()
+            for window in sorted(events):
+                self.on_deployment_event(events[window])
+                time.sleep(2)
+
     def on_deployment_event(self, next_events):
         if len(next_events) > 0:
             for event in next_events:
@@ -159,12 +178,6 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         for line in lines[1:]:
             conn.notice(nick, line[indent:])
 
-    brain = {
-        'help': do_command_help,
-        'die': do_command_die,
-        'next': do_command_next,
-        'refresh': do_command_refresh
-    }
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage="usage: %prog [options]")
