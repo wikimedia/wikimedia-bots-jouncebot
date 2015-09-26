@@ -79,6 +79,7 @@ class DeployPage:
                 item.xpath(self.XPATH_WINDOW)[0]).replace("\n", " ").strip()
             deployers = map(lambda x: x.text, item.xpath(self.XPATH_DEPLOYERS))
             owners = map(lambda x: x.text, item.xpath(self.XPATH_OWNERS))
+            owners = filter(lambda x: x != 'irc-nickname', owners)
 
             item_obj = DeployItem(id, '%s#%s' % (self.page_url, id),
                 start_time, end_time, window, deployers, owners)
