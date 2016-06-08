@@ -21,6 +21,18 @@ import sys
 import time
 
 
+def comma_join(items, oxford=True):
+    """Join an iterable of strings into a comma-separated unicode string."""
+    items = list(items)
+    if len(items) < 2:
+        return u''.join(items)
+    if len(items) == 2:
+        return u' and '.join(items)
+    last = items.pop()
+    sep = ', and ' if oxford else ' and '
+    return u'%s%s%s' % (', '.join(items), sep, last)
+
+
 class JounceBot(irc.bot.SingleServerIRCBot):
 
     def __init__(self, config, logger, deploy_page):
@@ -149,7 +161,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
     def on_deployment_event(self, next_events):
         for event in next_events:
             if len(event.deployers) > 0:
-                deployers = (u" ".join(event.deployers))
+                deployers = comma_join(event.deployers)
                 msg = random.choice(self.config['messages']['deployer'])
             else:
                 deployers = False
@@ -159,7 +171,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                 self.channel, msg.format(deployers=deployers, event=event))
 
             if len(event.owners) > 0:
-                owners = (u" ".join(event.owners))
+                owners = comma_join(event.owners)
                 msg = random.choice(self.config['messages']['owner'])
                 self.connection.privmsg(
                     self.channel, msg.format(owners=owners, event=event))
