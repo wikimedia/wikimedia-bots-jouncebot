@@ -69,22 +69,28 @@ class JounceBot(irc.bot.SingleServerIRCBot):
 
     def on_welcome(self, conn, event):
         self.logger.info("Connected to server")
-        self.logger.info("Authenticating with Nickserv")
-        conn.privmsg('NickServ', "identify %s %s" % (
-            self.config['irc']['nick'], self.config['irc']['password']))
+        self.do_identify()
 
         self.logger.info(
             "Getting information about the wiki and starting event handler")
         self.deploy_page.start(self.on_deployment_event)
 
-        self.logger.info("Attempting to join channel %s", self.channel)
-        conn.join(self.channel)
-
     def on_error(self, conn, event):
         self.logger.warning('%s: %s' % (event.source, event.arguments[0]))
 
     def on_privnotice(self, conn, event):
-        self.logger.warning('%s: %s' % (event.source, event.arguments[0]))
+        msg = event.arguments[0]
+        self.logger.warning('%s: %s' % (event.source, msg))
+
+        if event.source.nick == "NickServ":
+            if "NickServ identify" in msg:
+                self.do_identify()
+            elif "Invalid password" in msg:
+                sys.exit("Invalid password. Check settings")
+            elif "You are now identified" in msg:
+                self.logger.debug("Login succeeded")
+                self.logger.info("Attempting to join channel %s", self.channel)
+                conn.join(self.channel)
 
     def on_join(self, conn, event):
         self.logger.info("Successfully joined channel %s" % event.target)
@@ -102,6 +108,12 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                 self.do_command(
                     conn, event, event.target, msg_parts[1].strip())
         return
+
+    def do_identify(self):
+        """Send NickServ an identify message."""
+        self.logger.info("Authenticating with Nickserv")
+        self.connection.privmsg("NickServ", "identify %s %s" % (
+            self.config['irc']['nick'], self.config['irc']['password']))
 
     def do_command(self, conn, event, source, cmd):
         """Attempt to perform a given command given to the bot via IRC
