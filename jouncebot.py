@@ -80,6 +80,12 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         self.logger.info("Attempting to join channel %s", self.channel)
         conn.join(self.channel)
 
+    def on_error(self, conn, event):
+        self.logger.warning('%s: %s' % (event.source, event.arguments[0]))
+
+    def on_privnotice(self, conn, event):
+        self.logger.warning('%s: %s' % (event.source, event.arguments[0]))
+
     def on_join(self, conn, event):
         self.logger.info("Successfully joined channel %s" % event.target)
 
