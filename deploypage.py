@@ -98,7 +98,14 @@ class DeployPage:
         return self.deploy_items
 
     def get_current_events(self):
-        pass
+        """What is the set of DeployEvents overlapping the current time"""
+        ctime = datetime.datetime.now(pytz.utc)
+        found = []
+        for stime, items in self.deploy_items.items():
+            for item in items:
+                if item.start <= ctime and item.end >= ctime:
+                    found.append(item)
+        return found
 
     def get_next_events(self):
         """What are the first set of DeployEvents in the future"""
