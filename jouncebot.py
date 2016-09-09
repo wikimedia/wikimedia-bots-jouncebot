@@ -133,7 +133,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
 
     def do_command_help(self, conn, event, cmd, source, nickmask):
         """Prints the list of all commands known to the server"""
-        self.multiline_notice(
+        self.multiline(
             conn,
             source,
             """
@@ -143,7 +143,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
             \x02Available commands:\x02"""
         )
         for cmd in sorted(self.brain):
-            self.multiline_notice(conn, source, " %-7s %s" % (
+            self.multiline(conn, source, " %-7s %s" % (
                 cmd.upper(), self.brain[cmd].__doc__))
 
     def do_command_die(self, conn, event, cmd, nick, nickmask):
@@ -218,7 +218,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                 self.connection.privmsg(
                     self.channel, msg.format(owners=owners, event=event))
 
-    def multiline_notice(self, conn, nick, text):
+    def multiline(self, conn, nick, text):
         lines = text.expandtabs().splitlines()
         indent = sys.maxint
         if lines[1:]:
@@ -227,12 +227,12 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                 indent = min(indent, len(lines[1]) - len(stripped))
         if lines[0] == '':
             del lines[0]
-            conn.notice(nick, lines[0][indent:])
+            conn.privmsg(nick, lines[0][indent:])
         else:
-            conn.notice(nick, lines[0])
+            conn.privmsg(nick, lines[0])
 
         for line in lines[1:]:
-            conn.notice(nick, line[indent:])
+            conn.privmsg(nick, line[indent:])
 
 
 if __name__ == "__main__":
