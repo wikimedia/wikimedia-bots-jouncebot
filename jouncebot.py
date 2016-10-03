@@ -94,7 +94,9 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                 conn.join(self.channel)
 
     def on_join(self, conn, event):
-        self.logger.info("Successfully joined channel %s" % event.target)
+        nick = event.source.nick
+        if nick == conn.get_nickname():
+            self.logger.info("Successfully joined channel %s" % event.target)
 
     def on_privmsg(self, conn, event):
         self.do_command(conn, event, event.source.nick, event.arguments[0])
