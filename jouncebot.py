@@ -67,11 +67,17 @@ class JounceBot(irc.bot.SingleServerIRCBot):
             "Requested nickname %s already in use, appending _" %
             conn.get_nickname())
         conn.nick(conn.get_nickname() + "_")
+        conn.execute_delayed(30, self.do_reclaim_nick)
+
+    def do_reclaim_nick(self):
+        nick = self.connection.get_nickname()
+        if nick != self.config['irc']['nick']:
+            self.connection.nick(self.config['irc']['nick'])
+            self.logger.info("Nickname changed to default.")
 
     def on_welcome(self, conn, event):
         self.logger.info("Connected to server")
         self.do_identify()
-
         self.logger.info(
             "Getting information about the wiki and starting event handler")
         self.deploy_page.start(self.on_deployment_event)
