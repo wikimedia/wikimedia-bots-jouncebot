@@ -66,7 +66,7 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         self.logger.warning(
             "Requested nickname %s already in use, appending _" %
             conn.get_nickname())
-        conn.nick(conn.get_nickname() + "_")
+        conn.nick(self.config['irc']['nick'] + "_")
         conn.execute_delayed(30, self.do_reclaim_nick)
 
     def do_reclaim_nick(self):
