@@ -192,13 +192,18 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                     event.url))
         if not active:
             upcoming = self.deploy_page.get_next_events()
-            td = upcoming[0].start - ctime
-            conn.privmsg(
-                source,
-                ("No deployments scheduled for the next "
-                "%d hour(s) and %d minute(s)") % (
-                    td.days * 24 + td.seconds / 60 / 60,
-                    td.seconds % (60 * 60) / 60))
+            if upcoming:
+                td = upcoming[0].start - ctime
+                conn.privmsg(
+                    source,
+                    ("No deployments scheduled for the next "
+                    "%d hour(s) and %d minute(s)") % (
+                        td.days * 24 + td.seconds / 60 / 60,
+                        td.seconds % (60 * 60) / 60))
+            else:
+                conn.privmsg(
+                    source,
+                    "No deployments scheduled for the forseeable future!")
 
     def do_command_debug(self, conn, event, cmd, source, nickmask):
         """Debugging commands"""
