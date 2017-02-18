@@ -168,14 +168,20 @@ class JounceBot(irc.bot.SingleServerIRCBot):
     def do_command_next(self, conn, event, cmd, source, nickmask):
         """Get the next deployment event(s if they happen at the same time)"""
         ctime = datetime.datetime.now(pytz.utc)
-        for event in self.deploy_page.get_next_events():
-            td = event.start - ctime
-            conn.privmsg(source,
-                "In %d hour(s) and %d minute(s): %s (%s)" % (
-                    td.days * 24 + td.seconds / 60 / 60,
-                    td.seconds % (60 * 60) / 60,
-                    event.window,
-                    event.url))
+        future = self.deploy_page.get_next_events()
+        if future:
+            for event in future:
+                td = event.start - ctime
+                conn.privmsg(source,
+                    "In %d hour(s) and %d minute(s): %s (%s)" % (
+                        td.days * 24 + td.seconds / 60 / 60,
+                        td.seconds % (60 * 60) / 60,
+                        event.window,
+                        event.url))
+        else:
+            conn.privmsg(
+                source,
+                "No deployments scheduled for the forseeable future!")
 
     def do_command_now(self, conn, event, cmd, source, nickmask):
         """Get the current deployment event(s) or the time until the next"""
