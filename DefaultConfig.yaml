@@ -6,7 +6,7 @@ irc:
   port: 6667
   channel: "#wikimedia-operations"
   nick: jouncebot
-  realname: "https://github.com/mattofak/jouncebot"
+  realname: "https://wikitech.wikimedia.org/wiki/Tool:Jouncebot"
   password: SecretSauce
 
 mwclient:
