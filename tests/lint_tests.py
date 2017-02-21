@@ -7,9 +7,9 @@ import yaml
 
 def lint_yaml(path):
     try:
-        obj = yaml.safe_load(file(path, 'r'))
+        obj = yaml.safe_load(open(path, 'r'))
         assert obj, "Parse failed for %s: empty result" % path
-    except yaml.error.YAMLError, exc:
+    except yaml.error.YAMLError as exc:
         assert False, "YAML parse error in %s: %s" % (path, exc)
 
 
