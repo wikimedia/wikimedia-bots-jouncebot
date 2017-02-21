@@ -31,7 +31,8 @@ class DeployPage:
         # Things I hate about the MW API right here...
         # This is getting the full URL of the deployments page so we can create
         # nice links in IRC messages
-        page_url_result = mwcon.api('query',
+        page_url_result = mwcon.api(
+            'query',
             **{'titles': 'Deployments', 'prop': 'info', 'inprop': 'url'})
         idx = page_url_result['query']['pages'].keys()[0]
         self.page_url = page_url_result['query']['pages'][idx]['fullurl']
@@ -91,7 +92,8 @@ class DeployPage:
             owners = map(lambda x: x.text, item.xpath(self.XPATH_OWNERS))
             owners = filter(lambda x: x != 'irc-nickname', owners)
 
-            item_obj = DeployItem(id, '%s#%s' % (self.page_url, id),
+            item_obj = DeployItem(
+                id, '%s#%s' % (self.page_url, id),
                 start_time, end_time, window, deployers, owners)
 
             deploy_items[start_time].append(item_obj)
