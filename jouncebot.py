@@ -2,17 +2,19 @@
 # -*- coding: utf-8 -*-
 """IRC bot to poke people when their deploy windows are up"""
 
+import argparse
 import configloader
 import datetime
 import deploypage
-import irc.bot
-import irc.buffer
-import irc.client
+import ib3
+import ib3.auth
+import ib3.connection
+import ib3.mixins
+import ib3.nick
 import irc.strings
 import logging
 import logging.handlers
 import mwclient
-import optparse
 import os
 import pytz
 import random
@@ -33,7 +35,16 @@ def comma_join(items, oxford=True):
     return u'%s%s%s' % (', '.join(items), sep, last)
 
 
-class JounceBot(irc.bot.SingleServerIRCBot):
+class JounceBot(
+    ib3.auth.SASL,
+    ib3.connection.SSL,
+    ib3.mixins.DisconnectOnError,
+    ib3.mixins.PingServer,
+    ib3.mixins.RejoinOnBan,
+    ib3.mixins.RejoinOnKick,
+    ib3.nick.Regain,
+    ib3.Bot
+):
 
     def __init__(self, config, logger, deploy_page):
         self.config = config
@@ -51,53 +62,21 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         if self.config['debug']:
             self.brain['debug'] = self.do_command_debug
 
-        # Don't even get me started on how stupid a pattern this is
-        irc.client.ServerConnection.buffer_class = \
-            irc.buffer.LenientDecodingLineBuffer
-
-        irc.bot.SingleServerIRCBot.__init__(
-            self,
-            [(self.config['irc']['server'], self.config['irc']['port'])],
-            self.config['irc']['nick'],
-            self.config['irc']['realname']
+        super(JounceBot, self).__init__(
+            server_list=[
+                (self.config['irc']['server'], self.config['irc']['port']),
+            ],
+            nickname=self.config['irc']['nick'],
+            realname=self.config['irc']['realname'],
+            ident_password=self.config['irc']['password'],
+            channels=[self.channel],
         )
-
-    def on_nicknameinuse(self, conn, event):
-        self.logger.warning(
-            "Requested nickname %s already in use, appending _" %
-            conn.get_nickname())
-        conn.nick(self.config['irc']['nick'] + "_")
-        conn.execute_delayed(30, self.do_reclaim_nick)
-
-    def do_reclaim_nick(self):
-        nick = self.connection.get_nickname()
-        if nick != self.config['irc']['nick']:
-            self.connection.nick(self.config['irc']['nick'])
-            self.logger.info("Nickname changed to default.")
 
     def on_welcome(self, conn, event):
         self.logger.info("Connected to server")
-        self.do_identify()
         self.logger.info(
             "Getting information about the wiki and starting event handler")
         self.deploy_page.start(self.on_deployment_event)
-
-    def on_error(self, conn, event):
-        self.logger.warning('%s: %s' % (event.source, event.arguments[0]))
-
-    def on_privnotice(self, conn, event):
-        msg = event.arguments[0]
-        self.logger.warning('%s: %s' % (event.source, msg))
-
-        if event.source.nick == "NickServ":
-            if "NickServ identify" in msg:
-                self.do_identify()
-            elif "Invalid password" in msg:
-                sys.exit("Invalid password. Check settings")
-            elif "You are now identified" in msg:
-                self.logger.debug("Login succeeded")
-                self.logger.info("Attempting to join channel %s", self.channel)
-                conn.join(self.channel)
 
     def on_join(self, conn, event):
         nick = event.source.nick
@@ -110,19 +89,13 @@ class JounceBot(irc.bot.SingleServerIRCBot):
     def on_pubmsg(self, conn, event):
         msg_parts = event.arguments[0].split(" ", 1)
         if len(msg_parts) > 1:
-            handle = re.match(r"^([a-z0-9_\-\|]+)",
+            handle = re.match(
+                r"^([a-z0-9_\-\|]+)",
                 irc.strings.lower(msg_parts[0]))
             nick = irc.strings.lower(self.connection.get_nickname())
             if handle and handle.group(0) == nick:
                 self.do_command(
                     conn, event, event.target, msg_parts[1].strip())
-        return
-
-    def do_identify(self):
-        """Send NickServ an identify message."""
-        self.logger.info("Authenticating with Nickserv")
-        self.connection.privmsg("NickServ", "identify %s %s" % (
-            self.config['irc']['nick'], self.config['irc']['password']))
 
     def do_command(self, conn, event, source, cmd):
         """Attempt to perform a given command given to the bot via IRC
@@ -172,7 +145,8 @@ class JounceBot(irc.bot.SingleServerIRCBot):
         if future:
             for event in future:
                 td = event.start - ctime
-                conn.privmsg(source,
+                conn.privmsg(
+                    source,
                     "In %d hour(s) and %d minute(s): %s (%s)" % (
                         td.days * 24 + td.seconds / 60 / 60,
                         td.seconds % (60 * 60) / 60,
@@ -202,10 +176,13 @@ class JounceBot(irc.bot.SingleServerIRCBot):
                 td = upcoming[0].start - ctime
                 conn.privmsg(
                     source,
-                    ("No deployments scheduled for the next "
-                    "%d hour(s) and %d minute(s)") % (
+                    (
+                        "No deployments scheduled for the next "
+                        "%d hour(s) and %d minute(s)"
+                    ) % (
                         td.days * 24 + td.seconds / 60 / 60,
-                        td.seconds % (60 * 60) / 60))
+                        td.seconds % (60 * 60) / 60
+                    ))
             else:
                 conn.privmsg(
                     source,
@@ -254,30 +231,30 @@ class JounceBot(irc.bot.SingleServerIRCBot):
             conn.privmsg(nick, line[indent:])
 
 
-if __name__ == "__main__":
-    parser = optparse.OptionParser(usage="usage: %prog [options]")
-    parser.add_option("-c", "--config", dest='configFile',
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Jouncebot')
+    parser.add_argument(
+        '-c', '--config',
         default='jouncebot.yaml', help='Path to configuration file')
-    (options, args) = parser.parse_args()
+    parser.add_argument(
+        '-v', '--verbose', action='count',
+        default=0, dest='loglevel', help='Increase logging verbosity')
+    args = parser.parse_args()
 
     # Attempt to load the configuration
     config_path = os.path.join(os.path.dirname(__file__), 'DefaultConfig.yaml')
     configloader.import_file(config_path)
-    if options.configFile is not None:
-        configloader.import_file(options.configFile)
+    configloader.import_file(args.config)
 
-    # Initialize some sort of logger
+    # Initialize logger
+    logging.basicConfig(
+        level=max(logging.DEBUG, logging.WARNING - (10 * args.loglevel)),
+        format='%(asctime)s %(name)-12s %(levelname)-8s: %(message)s',
+        datefmt='%Y-%m-%dT%H:%M:%SZ'
+    )
+    logging.captureWarnings(True)
     logger = logging.getLogger('JounceBot')
     logger.setLevel(logging.DEBUG)
-    if sys.stdin.isatty() or not configloader.values['logging']['useSyslog']:
-        # Just need to log to the console
-        handler = logging.StreamHandler(sys.stdout)
-        logger.addHandler(handler)
-        handler.setFormatter(
-            logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-    else:
-        # Log to syslog
-        logger.addHandler(logging.handlers.SysLogHandler(address="/dev/log"))
 
     # Mwclient connection
     mw = mwclient.Site(host=('https', configloader.values['mwclient']['wiki']))
@@ -286,16 +263,15 @@ if __name__ == "__main__":
 
     # Create the application
     bot = JounceBot(configloader.values, logger, deploy_page)
-    logger.info("Attempting to connect to server")
+    logger.info('Attempting to connect to server')
 
     try:
         bot.start()
     except KeyboardInterrupt:
         deploy_page.stop()
-        exit(0)
+        bot.disconnect()
     except Exception:
-        logging.exception("Unhandled exception. Terminating.")
+        logger.exception('Unhandled exception. Terminating.')
         deploy_page.stop()
+        bot.disconnect()
         exit(1)
-
-    logging.error("No idea how I got here...")

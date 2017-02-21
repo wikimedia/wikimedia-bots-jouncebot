@@ -3,7 +3,7 @@
 
 irc:
   server: chat.freenode.net
-  port: 6667
+  port: 6697
   channel: "#wikimedia-operations"
   nick: jouncebot
   realname: "https://wikitech.wikimedia.org/wiki/Tool:Jouncebot"

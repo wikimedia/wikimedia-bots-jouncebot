@@ -1,4 +1,4 @@
-irc
+ib3==0.1.0
 lxml
 mwclient>=0.8.2
 python-dateutil
