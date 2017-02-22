@@ -1,6 +1,6 @@
 irc
 lxml
-mwclient
+mwclient>=0.8.2
 python-dateutil
 pytz
 pyyaml

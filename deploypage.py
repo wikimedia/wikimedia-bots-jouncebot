@@ -68,8 +68,18 @@ class DeployPage:
 
         self.logger.debug(
             "Collecting new deployment information from the server")
-        tree = lxml.etree.fromstring(
-            self._get_page_html(), lxml.etree.HTMLParser())
+        html = self._get_page_html()
+        if not html:
+            self.logger.error('Failed to get any page content.')
+            return
+
+        try:
+            tree = lxml.etree.HTML(html)
+        except lxml.etree.XMLSyntaxError:
+            self.logger.exception('Failed to parse Deployment page')
+            self.logger.error('Invalid HTML? "%s"', html)
+            return
+
         for item in tree.xpath(self.XPATH_ITEM):
             id = item.get('id')
             times = item.xpath(self.XPATH_TIMES)
@@ -123,11 +133,13 @@ class DeployPage:
 
     def _get_page_html(self):
         try:
-            return self.mwcon.parse(
-                self.mwcon.pages[self.page].edit())['text']['*']
-        except Exception as ex:
-            self.logger.error(
-                "Could not fetch page due to exception: " + repr(ex))
+            # T158715: Use a raw POST instead of 'parse'
+            return self.mwcon.post(
+                'parse',
+                text=self.mwcon.pages[self.page].text()
+            )['parse']['text']['*']
+        except Exception:
+            self.logger.exception("Could not fetch page due to exception")
             return ""
 
     def _reparse_on_timer(self):
