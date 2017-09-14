@@ -205,11 +205,10 @@ class JounceBot(
                 deployers = False
                 msg = random.choice(self.config['messages']['generic'])
 
+            self.connection.privmsg(
+               self.channel, msg.format(deployers=deployers, event=event)
+            )
             if len(event.owners) > 0:
-                # Don't ping deployers unless there are patches to be deployed
-                self.connection.privmsg(
-                    self.channel, msg.format(deployers=deployers, event=event)
-                )
                 owners = comma_join(event.owners)
                 msg = random.choice(self.config['messages']['owner'])
                 self.connection.privmsg(
