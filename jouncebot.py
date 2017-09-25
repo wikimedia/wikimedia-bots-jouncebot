@@ -216,7 +216,7 @@ class JounceBot(
             else:
                 self.connection.privmsg(
                     self.channel,
-                    'No patches in the queue for this window. Wheeee!'
+                    'No GERRIT patches in the queue for this window AFAICS.'
                 )
 
     def multiline(self, conn, nick, text):
