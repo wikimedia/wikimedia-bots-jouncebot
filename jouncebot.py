@@ -54,7 +54,6 @@ class JounceBot(
 
         self.brain = {
             'help': self.do_command_help,
-            'die': self.do_command_die,
             'next': self.do_command_next,
             'now': self.do_command_now,
             'refresh': self.do_command_refresh,
@@ -126,12 +125,6 @@ class JounceBot(
         for cmd in sorted(self.brain):
             self.multiline(conn, source, " %-7s %s" % (
                 cmd.upper(), self.brain[cmd].__doc__))
-
-    def do_command_die(self, conn, event, cmd, nick, nickmask):
-        """Kill this bot"""
-        self.deploy_page.stop()
-        self.die("Killed by %s" % nick)
-        exit()
 
     def do_command_refresh(self, conn, event, cmd, source, nickmask):
         """Refresh my knowledge about deployments"""
