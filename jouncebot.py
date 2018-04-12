@@ -206,7 +206,7 @@ class JounceBot(
                 msg = random.choice(self.config['messages']['owner'])
                 self.connection.privmsg(
                     self.channel, msg.format(owners=owners, event=event))
-            else:
+            elif 'SWAT' in event.window:
                 self.connection.privmsg(
                     self.channel,
                     'No GERRIT patches in the queue for this window AFAICS.'
