@@ -1,0 +1,30 @@
+---
+# Run jouncebot on kubernetes
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: jouncebot.bot
+  namespace: jouncebot
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: jouncebot.bot
+    spec:
+      containers:
+        - name: bot
+          image: docker-registry.tools.wmflabs.org/toollabs-python-base:latest
+          command: [ "/data/project/jouncebot/jouncebot/bin/jouncebot.sh", "run" ]
+          workingDir: /data/project/jouncebot
+          env:
+            - name: HOME
+              value: /data/project/jouncebot
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: home
+              mountPath: /data/project/jouncebot/
+      volumes:
+        - name: home
+          hostPath:
+            path: /data/project/jouncebot/
