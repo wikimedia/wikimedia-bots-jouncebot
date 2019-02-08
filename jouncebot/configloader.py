@@ -30,7 +30,7 @@ def import_file(filename):
 
 def _merge(new_vals, existing_obj):
     if isinstance(new_vals, dict) and isinstance(existing_obj, dict):
-        for k, v in existing_obj.iteritems():
+        for k, v in existing_obj.items():
             if k not in new_vals:
                 new_vals[k] = v
             else:
