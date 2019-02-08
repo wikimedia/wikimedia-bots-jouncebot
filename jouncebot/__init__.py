@@ -20,12 +20,12 @@ def comma_join(items, oxford=True):
     """Join an iterable of strings into a comma-separated unicode string."""
     items = list(items)
     if len(items) < 2:
-        return u''.join(items)
+        return ''.join(items)
     if len(items) == 2:
-        return u' and '.join(items)
+        return ' and '.join(items)
     last = items.pop()
     sep = ', and ' if oxford else ' and '
-    return u'%s%s%s' % (', '.join(items), sep, last)
+    return '%s%s%s' % (', '.join(items), sep, last)
 
 
 class JounceBot(
@@ -207,7 +207,7 @@ class JounceBot(
 
     def multiline(self, conn, nick, text):
         lines = text.expandtabs().splitlines()
-        indent = sys.maxint
+        indent = sys.maxsize
         if lines[1:]:
             stripped = lines[1].lstrip()
             if stripped:

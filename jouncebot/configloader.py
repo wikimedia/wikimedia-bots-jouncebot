@@ -11,8 +11,8 @@ def construct_yaml_str(self, node):
 
 
 # Attach custom unicode factory to string events
-yaml.Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
-yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+yaml.Loader.add_constructor('tag:yaml.org,2002:str', construct_yaml_str)
+yaml.SafeLoader.add_constructor('tag:yaml.org,2002:str', construct_yaml_str)
 
 
 def import_file(filename):
@@ -30,7 +30,7 @@ def import_file(filename):
 
 def _merge(new_vals, existing_obj):
     if isinstance(new_vals, dict) and isinstance(existing_obj, dict):
-        for k, v in existing_obj.items():
+        for k, v in list(existing_obj.items()):
             if k not in new_vals:
                 new_vals[k] = v
             else:

@@ -35,7 +35,7 @@ class DeployPage:
         page_url_result = mwcon.api(
             'query',
             **{'titles': 'Deployments', 'prop': 'info', 'inprop': 'url'})
-        idx = page_url_result['query']['pages'].keys()[0]
+        idx = list(page_url_result['query']['pages'].keys())[0]
         self.page_url = page_url_result['query']['pages'][idx]['fullurl']
 
         self.notify_callback = None
@@ -66,7 +66,7 @@ class DeployPage:
                 [node.tail]
             )
             # filter removes possible Nones in texts and tails
-            return ''.join(filter(None, parts))
+            return ''.join([_f for _f in parts if _f])
 
         self.logger.debug(
             "Collecting new deployment information from the server")
@@ -89,9 +89,9 @@ class DeployPage:
             end_time = dateutil.parser.parse(times[1].get('datetime'))
             window = stringify_children(
                 item.xpath(self.XPATH_WINDOW)[0]).replace("\n", " ").strip()
-            deployers = map(lambda x: x.text, item.xpath(self.XPATH_DEPLOYERS))
-            owners = map(lambda x: x.text, item.xpath(self.XPATH_OWNERS))
-            owners = filter(lambda x: x != 'irc-nickname', owners)
+            deployers = [x.text for x in item.xpath(self.XPATH_DEPLOYERS)]
+            owners = [x.text for x in item.xpath(self.XPATH_OWNERS)]
+            owners = [x for x in owners if x != 'irc-nickname']
 
             item_obj = DeployItem(
                 id, '%s#%s' % (self.page_url, id),
@@ -114,7 +114,7 @@ class DeployPage:
         """What is the set of DeployEvents overlapping the current time"""
         ctime = datetime.datetime.now(pytz.utc)
         found = []
-        for stime, items in self.deploy_items.items():
+        for stime, items in list(self.deploy_items.items()):
             for item in items:
                 if item.start <= ctime and item.end >= ctime:
                     found.append(item)
