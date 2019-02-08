@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import collections
 import datetime
-import dateutil.parser
 import lxml.etree
 import math
-import pytz
 import threading
+
+import dateutil.parser
+import pytz
 
 
 class DeployPage:
