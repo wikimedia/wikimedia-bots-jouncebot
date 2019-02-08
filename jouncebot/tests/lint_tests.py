@@ -15,4 +15,7 @@ def lint_yaml(path):
 
 def test_lint_DefaultConfig():
     lint_yaml(os.path.realpath(
-        os.path.join(os.path.dirname(__file__), '../DefaultConfig.yaml')))
+        os.path.join(
+            os.path.dirname(__file__),
+            '..', '..',
+            'etc', 'DefaultConfig.yaml')))

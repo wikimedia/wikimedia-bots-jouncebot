@@ -15,14 +15,15 @@ from jouncebot import JounceBot
 parser = argparse.ArgumentParser(description='Jouncebot')
 parser.add_argument(
     '-c', '--config',
-    default='jouncebot.yaml', help='Path to configuration file')
+    default='secrets.yaml', help='Path to configuration file')
 parser.add_argument(
     '-v', '--verbose', action='count',
     default=0, dest='loglevel', help='Increase logging verbosity')
 args = parser.parse_args()
 
 # Attempt to load the configuration
-config_path = os.path.join(os.path.dirname(__file__), 'DefaultConfig.yaml')
+config_path = os.path.join(
+    os.path.dirname(__file__), 'etc', 'DefaultConfig.yaml')
 configloader.import_file(config_path)
 configloader.import_file(args.config)
 

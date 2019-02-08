@@ -6,7 +6,7 @@ set -e
 DEPLOYMENT=jouncebot.bot
 POD_NAME=jouncebot.bot
 
-CONFIG=etc/config-k8s.yaml
+CONFIG=etc/secrets.yaml
 
 TOOL_DIR=$(cd $(dirname $0)/.. && pwd -P)
 VENV=venv-k8s-py3
@@ -29,7 +29,7 @@ case "$1" in
         date +%Y-%m-%dT%H:%M:%S
         echo "Running jouncebot..."
         cd ${TOOL_DIR}
-        exec python jouncebot.py --config ${CONFIG}
+        exec python3 jouncebot.py --config ${CONFIG} --verbose
         ;;
     stop)
         echo "Stopping jouncebot k8s deployment..."

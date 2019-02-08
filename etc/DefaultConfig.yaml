@@ -1,5 +1,4 @@
 # Default configuration file for JounceBot
-#   Copy this:( I' and place in either the JounceBot root or /etc as jouncebot.yaml
 
 irc:
   server: chat.freenode.net
@@ -12,11 +11,6 @@ irc:
 mwclient:
   wiki: wikitech.wikimedia.org
   calPage: Deployments
-
-aclFile: /etc/jouncebot.acl.yaml
-
-logging:
-  useSyslog: no
 
 messages:
   generic:
