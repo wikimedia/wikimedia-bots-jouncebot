@@ -7,9 +7,10 @@ DEPLOYMENT=jouncebot.bot
 POD_NAME=jouncebot.bot
 
 CONFIG=etc/secrets.yaml
+KUBECTL=/usr/bin/kubectl
 
 TOOL_DIR=$(cd $(dirname $0)/.. && pwd -P)
-VENV=venv-k8s-py3
+VENV=venv-k8s-py37
 if [[ -f ${TOOL_DIR}/${VENV}/bin/activate ]]; then
     source ${TOOL_DIR}/${VENV}/bin/activate
 fi
@@ -23,7 +24,7 @@ _get_pod() {
 case "$1" in
     start)
         echo "Starting jouncebot k8s deployment..."
-        kubectl create -f ${TOOL_DIR}/etc/deployment.yaml
+        ${KUBECTL} create -f ${TOOL_DIR}/etc/deployment.yaml
         ;;
     run)
         date +%Y-%m-%dT%H:%M:%S
@@ -33,13 +34,12 @@ case "$1" in
         ;;
     stop)
         echo "Stopping jouncebot k8s deployment..."
-        kubectl delete deployment ${DEPLOYMENT}
+        ${KUBECTL} delete deployment ${DEPLOYMENT}
         # FIXME: wait for the pods to stop
         ;;
     restart)
-        echo "Restarting jouncebot k8s deployment..."
-        $0 stop &&
-        $0 start
+        echo "Restarting jouncebot k8s pod..."
+        ${KUBECTL} delete pod $(_get_pod)
         ;;
     status)
         echo "Active pods:"
@@ -57,7 +57,7 @@ case "$1" in
         ;;
     attach)
         echo "Attaching to pod..."
-        exec kubectl exec -i -t $(_get_pod) /bin/bash
+        exec kubectl exec -i -t $(_get_pod) -- /bin/bash
         ;;
     *)
         echo "Usage: $0 {start|stop|restart|status|tail|update|attach}"
