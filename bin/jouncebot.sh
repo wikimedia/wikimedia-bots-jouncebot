@@ -16,7 +16,7 @@ if [[ -f ${TOOL_DIR}/${VENV}/bin/activate ]]; then
 fi
 
 _get_pod() {
-    kubectl get pods \
+    ${KUBECTL} get pods \
         --output=jsonpath={.items..metadata.name} \
         --selector=name=${POD_NAME}
 }
@@ -43,10 +43,10 @@ case "$1" in
         ;;
     status)
         echo "Active pods:"
-        kubectl get pods -l name=${POD_NAME}
+        ${KUBECTL} get pods -l name=${POD_NAME}
         ;;
     tail)
-        exec kubectl logs -f $(_get_pod)
+        exec ${KUBECTL} logs -f $(_get_pod)
         ;;
     update)
         echo "Updating git clone..."
@@ -57,7 +57,7 @@ case "$1" in
         ;;
     attach)
         echo "Attaching to pod..."
-        exec kubectl exec -i -t $(_get_pod) -- /bin/bash
+        exec ${KUBECTL} exec -i -t $(_get_pod) -- /bin/bash
         ;;
     *)
         echo "Usage: $0 {start|stop|restart|status|tail|update|attach}"
