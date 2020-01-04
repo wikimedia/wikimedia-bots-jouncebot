@@ -10,6 +10,10 @@ metadata:
     toolforge: tool
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      name: jouncebot.bot
+      toolforge: tool
   template:
     metadata:
       labels:
