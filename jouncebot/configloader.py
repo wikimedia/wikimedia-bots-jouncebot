@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Configuration processing."""
 import yaml
 
 values = {}
@@ -11,13 +12,12 @@ def construct_yaml_str(self, node):
 
 
 # Attach custom unicode factory to string events
-yaml.Loader.add_constructor('tag:yaml.org,2002:str', construct_yaml_str)
-yaml.SafeLoader.add_constructor('tag:yaml.org,2002:str', construct_yaml_str)
+yaml.Loader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
+yaml.SafeLoader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
 
 
 def import_file(filename):
-    """Update the values object with the contents from a YAML configuration
-    file.
+    """Update the values object with the contents from a YAML file.
 
     :param string filename: Name of the file to import
 
@@ -25,7 +25,7 @@ def import_file(filename):
     :throws yaml.ParserError
     """
     global values
-    values = _merge(yaml.load(open(filename, 'r')), values)
+    values = _merge(yaml.load(open(filename, "r")), values)
 
 
 def _merge(new_vals, existing_obj):
