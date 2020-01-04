@@ -38,7 +38,9 @@ logger = logging.getLogger('JounceBot')
 logger.setLevel(logging.DEBUG)
 
 # Mwclient connection
-mw = mwclient.Site(host=('https', configloader.values['mwclient']['wiki']))
+mw = mwclient.Site(
+    host=configloader.values['mwclient']['wiki'], scheme='https'
+)
 deploy_page = deploypage.DeployPage(
     mw, configloader.values['mwclient']['calPage'], logger)
 
