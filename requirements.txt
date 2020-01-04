@@ -1,6 +1,6 @@
 ib3==0.2.0
 lxml
-mwclient>=0.8.2
+mwclient>=0.10.0
 python-dateutil
 pytz
 pyyaml
