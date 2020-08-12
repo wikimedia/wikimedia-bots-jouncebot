@@ -226,7 +226,7 @@ class JounceBot(
                 self.connection.privmsg(
                     self.channel, msg.format(owners=owners, event=event)
                 )
-            elif "SWAT" in event.window:
+            elif "backport window" in event.window:
                 self.connection.privmsg(
                     self.channel,
                     "No GERRIT patches in the queue for this window AFAICS.",
