@@ -3,6 +3,7 @@
 import collections
 import datetime
 import math
+import re
 import threading
 
 import dateutil.parser
@@ -18,6 +19,7 @@ class DeployPage:
     XPATH_WINDOW = 'td//span[@class="deploycal-window"]'
     XPATH_DEPLOYERS = 'td[3]//span[@class="ircnick"]'
     XPATH_OWNERS = 'td[4]//span[@class="ircnick"]'
+    RE_MAX_X_PATCHES = re.compile(r"\(Max \d+ patches\)")
 
     def __init__(self, mwcon, page, logger, update_interval=15):
         """Create a DeployPage object.
@@ -101,6 +103,7 @@ class DeployPage:
                 .replace("\n", " ")
                 .strip()
             )
+            window = self.RE_MAX_X_PATCHES.sub("", window)
             deployers = [x.text for x in item.xpath(self.XPATH_DEPLOYERS)]
             owners = [x.text for x in item.xpath(self.XPATH_OWNERS)]
             owners = [x for x in owners if x != "irc-nickname"]
