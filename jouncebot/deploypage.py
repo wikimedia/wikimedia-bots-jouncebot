@@ -2,11 +2,13 @@
 """Read the deployments page."""
 import collections
 import datetime
+import json
 import math
 import re
 import threading
 
 import dateutil.parser
+from dateutil.tz import gettz
 import lxml.etree
 import pytz
 
@@ -14,11 +16,9 @@ import pytz
 class DeployPage:
     """Read the deployments page."""
 
-    XPATH_ITEM = '//tr[@class="deploycal-item"]'
-    XPATH_TIMES = 'td//span[@class="deploycal-time-utc"]/time'
-    XPATH_WINDOW = 'td//span[@class="deploycal-window"]'
-    XPATH_DEPLOYERS = 'td[3]//span[@class="ircnick"]'
-    XPATH_OWNERS = 'td[4]//span[@class="ircnick"]'
+    XPATH_JSON_DATA = '//div[@class="deployment-calendar-json"]'
+    XPATH_DEPLOYERS_JSON = '//span[@class="ircnick"]'
+    XPATH_OWNERS_JSON = '//span[@class="ircnick"]'
     RE_MAX_X_PATCHES = re.compile(r"\(Max \d+ patches\)")
 
     def __init__(self, mwcon, page, logger, update_interval=15):
@@ -93,19 +93,31 @@ class DeployPage:
             self.logger.error('Invalid HTML? "%s"', html)
             return
 
-        for item in tree.xpath(self.XPATH_ITEM):
-            item_id = item.get("id")
-            times = item.xpath(self.XPATH_TIMES)
-            start_time = dateutil.parser.parse(times[0].get("datetime"))
-            end_time = dateutil.parser.parse(times[1].get("datetime"))
-            window = (
-                stringify_children(item.xpath(self.XPATH_WINDOW)[0])
-                .replace("\n", " ")
-                .strip()
+        for item in tree.xpath(self.XPATH_JSON_DATA):
+            data = json.loads(item.text)
+            item_id = data["id"]
+            start_time = dateutil.parser.parse(
+                data["when"], tzinfos={"SF": gettz("America/Los_Angeles")}
             )
-            window = self.RE_MAX_X_PATCHES.sub("", window)
-            deployers = [x.text for x in item.xpath(self.XPATH_DEPLOYERS)]
-            owners = [x.text for x in item.xpath(self.XPATH_OWNERS)]
+            end_time = start_time + datetime.timedelta(
+                hours=float(data["length"])
+            )
+            window = self.RE_MAX_X_PATCHES.sub("", data.get("window"))
+
+            deployersTree = lxml.etree.HTML(data["who"])
+            deployers = []
+            if deployersTree is not None:
+                deployers = [
+                    x.text
+                    for x in deployersTree.xpath(self.XPATH_DEPLOYERS_JSON)
+                ]
+
+            ownersTree = lxml.etree.HTML(data["what"])
+            owners = []
+            if ownersTree is not None:
+                owners = [
+                    x.text for x in ownersTree.xpath(self.XPATH_OWNERS_JSON)
+                ]
             owners = [x for x in owners if x != "irc-nickname"]
 
             item_obj = DeployItem(
