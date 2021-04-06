@@ -171,9 +171,9 @@ class DeployPage:
     def _get_page_html(self):
         try:
             # T158715: Use a raw POST instead of 'parse'
-            return self.mwcon.post(
-                "parse", text=self.mwcon.pages[self.page].text()
-            )["parse"]["text"]["*"]
+            return self.mwcon.post("parse", page=self.page)["parse"]["text"][
+                "*"
+            ]
         except Exception:
             self.logger.exception("Could not fetch page due to exception")
             return ""
