@@ -1,5 +1,6 @@
 ib3==0.2.0
 lxml
+cssselect>=0.7
 mwclient>=0.10.0
 python-dateutil
 pytz

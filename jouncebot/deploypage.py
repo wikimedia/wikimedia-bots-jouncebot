@@ -2,13 +2,11 @@
 """Read the deployments page."""
 import collections
 import datetime
-import json
 import math
 import re
 import threading
 
 import dateutil.parser
-from dateutil.tz import gettz
 import lxml.etree
 import pytz
 
@@ -16,9 +14,10 @@ import pytz
 class DeployPage:
     """Read the deployments page."""
 
-    XPATH_JSON_DATA = '//div[@class="deployment-calendar-json"]'
-    XPATH_DEPLOYERS_JSON = '//span[@class="ircnick"]'
-    XPATH_OWNERS_JSON = '//span[@class="ircnick"]'
+    SELECT_ITEM = ".deploycal-item"
+    SELECT_WINDOW = ".deploycal-item-window"
+    SELECT_DEPLOYERS = ".deploycal-item-deployer .ircnick"
+    SELECT_OWNERS = ".deploycal-item-changes .ircnick"
     RE_MAX_X_PATCHES = re.compile(r"\(Max \d+ patches\)")
 
     def __init__(self, mwcon, page, logger, update_interval=15):
@@ -65,19 +64,6 @@ class DeployPage:
         """Reparse the deployment page."""
         deploy_items = collections.defaultdict(list)
 
-        def stringify_children(node):
-            from itertools import chain
-
-            parts = (
-                [node.text]
-                + list(
-                    chain(*(stringify_children(c) for c in node.getchildren()))
-                )
-                + [node.tail]
-            )
-            # filter removes possible Nones in texts and tails
-            return "".join([_f for _f in parts if _f])
-
         self.logger.debug(
             "Collecting new deployment information from the server"
         )
@@ -93,31 +79,25 @@ class DeployPage:
             self.logger.error('Invalid HTML? "%s"', html)
             return
 
-        for item in tree.xpath(self.XPATH_JSON_DATA):
-            data = json.loads(item.text)
-            item_id = data["id"]
-            start_time = dateutil.parser.parse(
-                data["when"], tzinfos={"SF": gettz("America/Los_Angeles")}
-            )
-            end_time = start_time + datetime.timedelta(
-                hours=float(data["length"])
-            )
-            window = self.RE_MAX_X_PATCHES.sub("", data.get("window"))
+        for item in tree.cssselect(self.SELECT_ITEM):
+            item_id = item.get("id")
+            start_time = dateutil.parser.parse(item.get("data-utcstart"))
+            end_time = dateutil.parser.parse(item.get("data-utcend"))
 
-            deployersTree = lxml.etree.HTML(data["who"])
-            deployers = []
-            if deployersTree is not None:
-                deployers = [
-                    x.text
-                    for x in deployersTree.xpath(self.XPATH_DEPLOYERS_JSON)
-                ]
+            window_node = item.cssselect(self.SELECT_WINDOW)
+            # In lxml, element.text only returns the first text node.
+            # use xpath("string()") here so that it combines all text in
+            # the element, including styled text, links, paragraphs, etc.
+            window = (
+                window_node[0].xpath("string()").strip()
+                if len(window_node)
+                else "Unnamed window"
+            )
+            window = self.RE_MAX_X_PATCHES.sub("", window)
 
-            ownersTree = lxml.etree.HTML(data["what"])
-            owners = []
-            if ownersTree is not None:
-                owners = [
-                    x.text for x in ownersTree.xpath(self.XPATH_OWNERS_JSON)
-                ]
+            deployers = [x.text for x in item.cssselect(self.SELECT_DEPLOYERS)]
+
+            owners = [x.text for x in item.cssselect(self.SELECT_OWNERS)]
             owners = [x for x in owners if x != "irc-nickname"]
 
             item_obj = DeployItem(
