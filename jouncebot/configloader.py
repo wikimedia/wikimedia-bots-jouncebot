@@ -25,7 +25,9 @@ def import_file(filename):
     :throws yaml.ParserError
     """
     global values
-    values = _merge(yaml.load(open(filename, "r")), values)
+    values = _merge(
+        yaml.load(open(filename, "r"), Loader=yaml.SafeLoader), values
+    )
 
 
 def _merge(new_vals, existing_obj):
