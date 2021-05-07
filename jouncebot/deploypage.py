@@ -154,7 +154,7 @@ class DeployPage:
             return self.mwcon.post("parse", page=self.page)["parse"]["text"][
                 "*"
             ]
-        except Exception:
+        except Exception:  # noqa: B902
             self.logger.exception("Could not fetch page due to exception")
             return ""
 

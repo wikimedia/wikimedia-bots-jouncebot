@@ -60,7 +60,7 @@ try:
 except KeyboardInterrupt:
     deploy_page.stop()
     bot.disconnect()
-except Exception:
+except Exception:  # noqa: B902
     logger.exception("Unhandled exception. Terminating.")
     deploy_page.stop()
     bot.disconnect()
