@@ -179,14 +179,14 @@ class DeployPage:
             self.logger.debug(
                 "Setting deploy timer to %s for %s", td, next_events[0]
             )
-            self.notify_timer = threading.Timer(
-                td, self._on_deploy_timer, [next_events]
-            )
+            self.notify_timer = threading.Timer(td, self._on_deploy_timer)
             self.notify_timer.start()
 
-    def _on_deploy_timer(self, events):
+    def _on_deploy_timer(self):
         self.logger.info("Deploy timer kicked. Attempting to notify.")
-        self.logger.debug("Num events: %s", len(events))
+        # T243394: reparse at window to catch last minute additions
+        self.reparse(set_timer=False)
+        events = self.get_current_events()
         self.notify_callback(events)
         self._set_deploy_timer()
 
