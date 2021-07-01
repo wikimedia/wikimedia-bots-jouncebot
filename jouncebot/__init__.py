@@ -124,8 +124,8 @@ class JounceBot(
             source,
             """
             \x02**** JounceBot Help ****\x02
-            JounceBot is a deployment helper bot for the Wikimedia Foundation.
-            You can find my source at https://github.com/mattofak/jouncebot
+            JounceBot is a deployment helper bot for the Wikimedia movement.
+            Source at: https://gerrit.wikimedia.org/g/wikimedia/bots/jouncebot
             \x02Available commands:\x02""",
         )
         for cmd in sorted(self.brain):
