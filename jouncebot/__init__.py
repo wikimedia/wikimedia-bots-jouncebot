@@ -51,6 +51,7 @@ class JounceBot(
             "help": self.do_command_help,
             "next": self.do_command_next,
             "now": self.do_command_now,
+            "nowandnext": self.do_command_now_and_next,
             "refresh": self.do_command_refresh,
         }
         if self.config["debug"]:
@@ -206,6 +207,11 @@ class JounceBot(
             for window in sorted(events):
                 self.on_deployment_event(events[window])
                 time.sleep(2)
+
+    def do_command_now_and_next(self, conn, event, cmd, source, nickmask):
+        """Get the current and next deployment event(s)."""
+        self.do_command_now(conn, event, cmd, source, nickmask)
+        self.do_command_next(conn, event, cmd, source, nickmask)
 
     def on_deployment_event(self, next_events):
         """Handle a deployment event."""
