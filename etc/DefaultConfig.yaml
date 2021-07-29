@@ -1,7 +1,7 @@
 # Default configuration file for JounceBot
 
 irc:
-  server: chat.freenode.net
+  server: irc.libera.chat
   port: 6697
   channel: "#wikimedia-operations"
   nick: jouncebot
