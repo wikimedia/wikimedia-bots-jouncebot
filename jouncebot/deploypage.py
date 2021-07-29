@@ -18,7 +18,13 @@ class DeployPage:
     SELECT_WINDOW = ".deploycal-item-window"
     SELECT_DEPLOYERS = ".deploycal-item-deployer .ircnick"
     SELECT_OWNERS = ".deploycal-item-changes .ircnick"
+
+    # Texts to remove from the calendar when notifying on irc:
     RE_MAX_X_PATCHES = re.compile(r"\(Max \d+ patches\)")
+    BACKPORT_WARNING = (
+        "Your patch may or may not be deployed at the "
+        "sole discretion of the deployer"
+    )
 
     def __init__(self, mwcon, page, logger, update_interval=15):
         """Create a DeployPage object.
@@ -93,7 +99,10 @@ class DeployPage:
                 if len(window_node)
                 else "Unnamed window"
             )
+
+            # Remove unneeded text present in the calendar
             window = self.RE_MAX_X_PATCHES.sub("", window)
+            window = window.replace(self.BACKPORT_WARNING, "")
 
             deployers = [x.text for x in item.cssselect(self.SELECT_DEPLOYERS)]
 
