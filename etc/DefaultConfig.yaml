@@ -23,7 +23,7 @@ messages:
     - '{deployers}: (Dis)respected human, time to deploy {event.window} ({event.url}). Please do the needful.'
     - '{deployers}: Your horoscope predicts another unfortunate {event.window} deploy. May Zuul be (nice) with you. ({event.url}).'
     - '{deployers}: My dear minions, it''s time we take the moon! Just kidding. Time for {event.window} deploy. ({event.url}).'
-    - '{deployers}: I, the Bot under the Fountain, allow thee, The Deployer, to do {event.window} deploy. ({event.url}).'
+    - '{deployers}: I, the Bot under the Fountain, call upon thee, The Deployer, to do {event.window} deploy. ({event.url}).'
     - '{deployers}: That opportune time is upon us again. Time for a {event.window} deploy. Don''t be afraid. ({event.url}).'
     - '{deployers}: I seem to be stuck in Groundhog week. Sigh. Time for (yet another) {event.window} deploy. ({event.url}).'
     - '{deployers}: #bothumor Q:How do functions break up? A:They stop calling each other. Rise for {event.window} deploy. ({event.url}).'
