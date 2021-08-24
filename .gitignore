@@ -1,5 +1,5 @@
 *.pyc
 /.python-version
 /.tox/
-/etc/secrets.yaml
+/etc/secrets*.yaml
 /venv-*

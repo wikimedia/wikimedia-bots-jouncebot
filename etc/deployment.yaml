@@ -3,21 +3,21 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: jouncebot.bot
+  name: jouncebot.libera
   namespace: tool-jouncebot
   labels:
-    name: jouncebot.bot
+    name: jouncebot.libera
     toolforge: tool
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: jouncebot.bot
+      name: jouncebot.libera
       toolforge: tool
   template:
     metadata:
       labels:
-        name: jouncebot.bot
+        name: jouncebot.libera
         toolforge: tool
     spec:
       containers:

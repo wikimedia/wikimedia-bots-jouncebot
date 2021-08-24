@@ -3,10 +3,10 @@
 
 set -e
 
-DEPLOYMENT=jouncebot.bot
-POD_NAME=jouncebot.bot
+DEPLOYMENT=jouncebot.libera
+POD_NAME=jouncebot.libera
 
-CONFIG=etc/secrets.yaml
+CONFIG=etc/secrets-libera.yaml
 KUBECTL=/usr/bin/kubectl
 
 TOOL_DIR=$(cd $(dirname $0)/.. && pwd -P)
