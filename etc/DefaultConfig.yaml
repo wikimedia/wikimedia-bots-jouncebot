@@ -18,7 +18,7 @@ messages:
   deployer:
     - '{deployers}: How many deployers does it take to do {event.window} deploy? ({event.url}).'
     - '{deployers}: Time to snap out of that daydream and deploy {event.window}. Get on with it. ({event.url}).'
-    - '{deployers}: Dear deployers, time to do the {event.window} deploy. Dont look at me like that. You signed up for it. ({event.url}).'
+    - '{deployers}: Dear deployers, time to do the {event.window} deploy. Don''t look at me like that. You signed up for it. ({event.url}).'
     - '{deployers}: It is that lovely time of the day again! You are hereby commanded to deploy {event.window}. ({event.url}).'
     - '{deployers}: (Dis)respected human, time to deploy {event.window} ({event.url}). Please do the needful.'
     - '{deployers}: Your horoscope predicts another unfortunate {event.window} deploy. May Zuul be (nice) with you. ({event.url}).'
@@ -33,6 +33,7 @@ messages:
     - '{deployers}: #bothumor I � Unicode. All rise for {event.window} deploy. ({event.url}).'
     - '{deployers}: May I have your attention please! {event.window}. ({event.url})'
     - '{deployers}: OwO what''s this, a deployment window?? {event.window}. ({event.url}). nyaa~'
+    - '{deployers}: gettimeofday() says it''s time for {event.window}. ({event.url})'
 
   owner:
     - '{owners}: A patch you scheduled for {event.window} is about to be deployed. Please be around during the process. Note: If you break AND fix the wikis, you will be rewarded with a sticker.'
