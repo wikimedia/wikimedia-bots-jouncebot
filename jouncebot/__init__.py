@@ -232,10 +232,13 @@ class JounceBot(
                 self.connection.privmsg(
                     self.channel, msg.format(owners=owners, event=event)
                 )
-            elif "backport window" in event.window:
+            elif (
+                "backport window" in event.window
+                or "Puppet request window" in event.window
+            ):
                 self.connection.privmsg(
                     self.channel,
-                    "No GERRIT patches in the queue for this window AFAICS.",
+                    "No Gerrit patches in the queue for this window AFAICS.",
                 )
 
     def multiline(self, conn, nick, text):
