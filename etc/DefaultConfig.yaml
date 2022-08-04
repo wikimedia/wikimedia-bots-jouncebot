@@ -32,6 +32,7 @@ messages:
     - '{deployers}: #bothumor My software never has bugs. It just develops random features. Rise for {event.window}. ({event.url}).'
     - '{deployers}: #bothumor I � Unicode. All rise for {event.window} deploy. ({event.url}).'
     - '{deployers}: May I have your attention please! {event.window}. ({event.url})'
+    - '{deployers}: OwO what''s this, a deployment window?? {event.window}. ({event.url}). nyaa~'
 
   owner:
     - '{owners}: A patch you scheduled for {event.window} is about to be deployed. Please be around during the process. Note: If you break AND fix the wikis, you will be rewarded with a sticker.'
