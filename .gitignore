@@ -1,5 +1,0 @@
-*.pyc
-/.python-version
-/.tox/
-/etc/secrets*.yaml
-/venv-*
